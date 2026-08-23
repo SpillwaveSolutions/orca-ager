@@ -1,12 +1,13 @@
 # Orca skills for this compiled project
 
-AGER compiled this fleet to run **inside Orca ADE**. Two peer skills from [stablyai/orca](https://github.com/stablyai/orca) are required. They are discovery stubs — load the live, version-matched guide from the running binary before any command.
+AGER compiled this fleet to run **inside Orca ADE**. Install the skills from the **orca-ager plugin** ([SpillwaveSolutions/orca-ager](https://github.com/SpillwaveSolutions/orca-ager)). Discovery stubs ship in the plugin; the running Orca binary still serves the live command guide.
 
-## Install
+## Install (from the plugin)
 
 ```bash
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 ```
 
 ```bash
@@ -28,6 +29,7 @@ Use `--json` when an agent needs deterministic output.
 
 | Skill | Use for |
 | --- | --- |
+| **ager-to-orca** | Compile / validate / reverse AGER graphs (this plugin). |
 | **orca-cli** | Named worktrees (`wt-claude`, `wt-grok`, `wt-codex`), terminals, full handoffs, snapshots, embedded browser. Prefer over raw `git worktree`. |
 | **orchestration** | `run-create`, `task-create`, `worker-start --name <Host>-<Role>`, `check --wait --types worker_done,escalation,question`, `gate-create`, coordinator loops. This is the plan → review → implement → judge → mediate DAG. |
 

@@ -9,7 +9,8 @@ Entry: **Claude-Plan-Drafter**. Coordinator: **Orca-Coordinator**. Remote-contro
 Peer skills: `orca-cli` + `orchestration`. See `ORCA_SKILLS.md`.
 
 ```bash
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 bash scripts/run-feature.sh "start new feature: <description>"
 ```

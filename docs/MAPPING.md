@@ -18,6 +18,6 @@
 | Run / Trigger | **orchestration** skill | `run-create` + `task-create` + `worker-start --name` |
 | Rubric / Judgment | Judge critique files + final score | `artifacts/judgments/judge-<host>.md` |
 | Named roles | `<Host>-<Role>` titles | Remote-control list stays intelligible |
-| Peer skills | orca-cli + orchestration | Live guide: `orca skills get orca-cli` / `orchestration --full` |
+| Peer skills | orca-cli + orchestration via orca-ager plugin | Install: `npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli` |
 | Coordinator loop | Orca-Coordinator | Drives the DAG; does not implement the feature |
 | KnowledgeBind / RetrievalBinding | second-brain/ + DecisionRecord / TicketLink | Pull main to read. Own worktree → branch → PR to write. |

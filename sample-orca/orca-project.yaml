@@ -415,15 +415,15 @@ spec:
       action: pr_and_merge
   skills:
     - name: orca-cli
-      source: "https://github.com/stablyai/orca"
-      install_npx: "npx skills add https://github.com/stablyai/orca --skill orca-cli --global"
+      source: "https://github.com/SpillwaveSolutions/orca-ager"
+      install_npx: "npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global"
       install_orca: orca skills install --skill orca-cli --skill orchestration
       load: orca skills get orca-cli
       use: Worktrees, terminals, folder contexts, full handoffs, snapshots, automations, embedded browser. Prefer over raw git worktree.
       primary_for: isolated worktree agents (implementers, judges) and any handoff
     - name: orchestration
-      source: "https://github.com/stablyai/orca"
-      install_npx: "npx skills add https://github.com/stablyai/orca --skill orchestration --global"
+      source: "https://github.com/SpillwaveSolutions/orca-ager"
+      install_npx: "npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global"
       install_orca: orca skills install --skill orca-cli --skill orchestration
       load: orca skills get orchestration --full
       use: Runs, Tasks, supervised workers, worker_done/escalation waits, task DAGs, decision gates, coordinator loops. Maps onto plan → review → implement → judge → mediate.

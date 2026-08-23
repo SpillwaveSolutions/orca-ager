@@ -275,11 +275,12 @@ Command on Codex: `$orca-compile`
 Depends on `okf-agent-graph` for author/validate. This plugin only compiles.
 Orca ADE is the runtime: https://github.com/stablyai/orca · https://www.onorca.dev/
 
-Peer skills from stablyai/orca (required at runtime):
+Peer skills from the orca-ager plugin (required at runtime):
 
 ```bash
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 orca skills get orca-cli
 orca skills get orchestration --full
 ```

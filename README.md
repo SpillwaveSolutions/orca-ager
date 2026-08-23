@@ -34,11 +34,12 @@ codex plugin marketplace add SpillwaveSolutions/orca-ager
 
 Cursor: `/plugin install orca-ager` — [docs/CURSOR.md](docs/CURSOR.md).
 
-Peer Orca skills (required at runtime):
+Peer Orca skills — install from this plugin:
 
 ```bash
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 orca skills get orca-cli
 orca skills get orchestration --full
 ```

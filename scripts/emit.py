@@ -45,7 +45,7 @@ CONCEPT_MAP = [
     ("Run / Trigger", "orchestration skill: run-create + task-create + worker-start", "Triggered by prompt or ticket: start new feature: <description>. Coordinator drives the DAG."),
     ("Rubric / Judgment", "Judge critique files + final score", "artifacts/judgments/judge-<host>.md"),
     ("Named roles", "<Host>-<Role> session titles", "Remote-control list stays intelligible. Policy: rename | disable."),
-    ("Peer skills", "orca-cli + orchestration (stablyai/orca)", "Discovery stubs in skills/. Live guide: orca skills get orca-cli / orchestration --full."),
+    ("Peer skills", "orca-cli + orchestration (orca-ager plugin)", "Install from SpillwaveSolutions/orca-ager. Live guide: orca skills get orca-cli / orchestration --full."),
     ("Coordinator loop", "Orca-Coordinator", "Loads orchestration --full, then run-create → named workers → worker_done waits → gate-create."),
     ("KnowledgeBind / RetrievalBinding", "second-brain/ root + DecisionRecord / TicketLink", "Optional. Pull main to read. Own worktree → branch → PR to write."),
 ]
@@ -263,8 +263,9 @@ Coordinator: **Orca-Coordinator** drives the DAG. Isolated implementers/judges u
 
 ```bash
 # install peer skills once
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 bash scripts/run-feature.sh "start new feature: <description>"
 ```
 
@@ -447,6 +448,7 @@ def emit(
         "agents/Orca-Coordinator/SYSTEM.md": coordinator_prompt(project),
         "skills/orca-cli/SKILL.md": load_stub("orca-cli"),
         "skills/orchestration/SKILL.md": load_stub("orchestration"),
+        "skills/ager-to-orca/SKILL.md": load_stub("ager-to-orca"),
         "docs/planning/.gitkeep": "",
         "artifacts/critiques/.gitkeep": "",
         "artifacts/judgments/.gitkeep": "",

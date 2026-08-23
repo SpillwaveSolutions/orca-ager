@@ -1,8 +1,8 @@
-Vendored discovery stub from [stablyai/orca](https://github.com/stablyai/orca/tree/main/skills/orchestration).
+Vendored discovery stub from [stablyai/orca](https://github.com/stablyai/orca/tree/main/skills/orchestration), shipped by this plugin.
 
-The stub is not the command reference. Load the live guide from the running binary:
+Install from the plugin. Load the live guide from the running binary:
 
 ```bash
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 orca skills get orchestration --full
 ```

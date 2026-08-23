@@ -27,5 +27,6 @@
     "agent-plugins",
     "worklog",
     "wiki-ticket-sdd"
-  ]
+  ],
+  "skills": "./skills/"
 }

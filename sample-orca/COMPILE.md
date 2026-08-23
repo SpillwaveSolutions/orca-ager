@@ -47,7 +47,7 @@ Coordinator: **Orca-Coordinator** drives the DAG. Isolated implementers/judges u
 | Run / Trigger | orchestration skill: run-create + task-create + worker-start |
 | Rubric / Judgment | Judge critique files + final score |
 | Named roles | <Host>-<Role> session titles |
-| Peer skills | orca-cli + orchestration (stablyai/orca) |
+| Peer skills | orca-cli + orchestration (orca-ager plugin) |
 | Coordinator loop | Orca-Coordinator |
 | KnowledgeBind / RetrievalBinding | second-brain/ root + DecisionRecord / TicketLink |
 
@@ -55,8 +55,9 @@ Coordinator: **Orca-Coordinator** drives the DAG. Isolated implementers/judges u
 
 ```bash
 # install peer skills once
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 bash scripts/run-feature.sh "start new feature: <description>"
 ```
 

@@ -5,13 +5,14 @@ description: Install and load the official Orca peer skills (orca-cli, orchestra
 
 # /orca-skills
 
-Compiled orca-ager fleets run inside Orca ADE. Two peer skills from [stablyai/orca](https://github.com/stablyai/orca) are required. They are discovery stubs — the running binary serves the live guide.
+Compiled orca-ager fleets run inside Orca ADE. Install **orca-cli**, **orchestration**, and **ager-to-orca** from this plugin. The Orca binary still serves the live command guide.
 
 ## Install
 
 ```bash
-npx skills add https://github.com/stablyai/orca --skill orca-cli --global
-npx skills add https://github.com/stablyai/orca --skill orchestration --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill ager-to-orca --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orca-cli --global
+npx skills add https://github.com/SpillwaveSolutions/orca-ager --skill orchestration --global
 ```
 
 ```bash
