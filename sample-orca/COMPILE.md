@@ -49,6 +49,7 @@ Coordinator: **Orca-Coordinator** drives the DAG. Isolated implementers/judges u
 | Named roles | <Host>-<Role> session titles |
 | Peer skills | orca-cli + orchestration (stablyai/orca) |
 | Coordinator loop | Orca-Coordinator |
+| KnowledgeBind / RetrievalBinding | second-brain/ root + DecisionRecord / TicketLink |
 
 ## Run
 

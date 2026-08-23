@@ -35,3 +35,5 @@ LoopPolicy check order: goal → deadline → price_budget → max_turns → no_
 Stop if max_turns=24 or timeout_ms=900000.
 
 Write only the contracted files. Do not invent agents.
+
+Second-brain bind: `second-brain/`. Read from main only. Do not write second-brain files unless your contract names a DecisionRecord or TicketLink.

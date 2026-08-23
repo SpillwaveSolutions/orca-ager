@@ -214,9 +214,10 @@ All intermediate artifacts (plans, critiques, judgments) are written into a shar
 
 Because many of the user’s projects already use an OKF second-brain repo:
 
-- Agents that need to record tickets, decisions, or SLDC notes must follow the second-brain write protocol (own worktree → branch → PR → merge).
-- The translator can optionally emit a `KnowledgeBind` / `RetrievalBinding` that points agents at the second-brain root.
-- Critiques, judgments, and final decisions become `DecisionRecord` or `TicketLink` concepts when the second-brain bridge is enabled.
+- Agents that need to record tickets, decisions, or SLDC notes follow the second-brain write protocol (own worktree → branch → PR → merge).
+- When `knowledge_bind` is set, emit `knowledge-bind.yaml` (`KnowledgeBind` / `RetrievalBinding`) pointing at the second-brain root, plus `SECOND_BRAIN.md`.
+- Critiques and judgments become `DecisionRecord`s. The refined plan and HumanGate merge become `TicketLink`s.
+- SYSTEM.md for bound agents names the record kind and forbids writing on `main`.
 
 ---
 
@@ -234,6 +235,7 @@ Because many of the user’s projects already use an OKF second-brain repo:
 - [x] The stage DAG is emitted as orchestration primitives plus an Orca-Coordinator.
 - [x] Plugin vendors orca-cli and orchestration discovery stubs.
 - [x] `scripts/reverse.py` round-trips `orca-project.yaml` to a draft AGER graph (coordinator dropped, names → ids).
+- [x] Optional `knowledge_bind` emits KnowledgeBind + DecisionRecord/TicketLink + second-brain write protocol.
 
 ---
 

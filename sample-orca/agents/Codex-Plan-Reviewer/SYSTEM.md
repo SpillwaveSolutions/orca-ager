@@ -35,3 +35,5 @@ LoopPolicy check order: goal → deadline → price_budget → max_turns → no_
 Stop if max_turns=8 or timeout_ms=180000.
 
 Write only the contracted files. Do not invent agents.
+
+Second-brain bind: `second-brain/`. Your durable writes are **DecisionRecords**. Read from main only. To record, use your own worktree → branch → PR → merge. Never write second-brain files on main.

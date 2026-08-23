@@ -154,6 +154,15 @@ class EmitTests(unittest.TestCase):
             self.assertIn("orca-cli", yaml)
             self.assertIn("Orca-Coordinator", yaml)
             self.assertRegex(yaml, r"(?m)^\s+skills:\n\s+primary: orca-cli")
+            self.assertTrue((out / "knowledge-bind.yaml").is_file())
+            self.assertTrue((out / "SECOND_BRAIN.md").is_file())
+            bind = (out / "knowledge-bind.yaml").read_text()
+            self.assertIn("KnowledgeBind", bind)
+            self.assertIn("DecisionRecord", bind)
+            self.assertIn("TicketLink", bind)
+            judge = (out / "agents/Claude-Judge/SYSTEM.md").read_text()
+            self.assertIn("DecisionRecord", judge)
+            self.assertIn("second-brain/", judge)
 
     def test_fails_on_worktree_overlap(self) -> None:
         from emit import emit
@@ -233,6 +242,7 @@ class ReverseTests(unittest.TestCase):
         self.assertEqual(implementer.worktree, "wt-claude")
         self.assertIn("claude-implementer", graph.stages[3].agents)
         self.assertEqual(graph.gate.after, "final-spec-reviewer")
+        self.assertEqual(graph.knowledge_bind, "second-brain/")
         trees = sorted(a.worktree for a in graph.agents if a.worktree)
         self.assertEqual(
             trees,

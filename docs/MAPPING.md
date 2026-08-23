@@ -20,3 +20,4 @@
 | Named roles | `<Host>-<Role>` titles | Remote-control list stays intelligible |
 | Peer skills | orca-cli + orchestration | Live guide: `orca skills get orca-cli` / `orchestration --full` |
 | Coordinator loop | Orca-Coordinator | Drives the DAG; does not implement the feature |
+| KnowledgeBind / RetrievalBinding | second-brain/ + DecisionRecord / TicketLink | Pull main to read. Own worktree → branch → PR to write. |

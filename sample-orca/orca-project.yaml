@@ -432,3 +432,20 @@ spec:
     name: Orca-Coordinator
     prompt: agents/Orca-Coordinator/SYSTEM.md
     skill: orchestration
+  knowledge_bind:
+    apiVersion: okf.spillwave.com/v1
+    kind: KnowledgeBind
+    root: second-brain/
+    retrieval:
+      read: pull main. Do not write on main.
+      write: own worktree → branch → PR → merge
+    records:
+      - type: DecisionRecord
+        source: artifacts/judgments/
+        dest: second-brain/decisions/
+      - type: DecisionRecord
+        source: artifacts/critiques/
+        dest: second-brain/decisions/critiques/
+      - type: TicketLink
+        source: docs/planning/
+        dest: second-brain/tickets/

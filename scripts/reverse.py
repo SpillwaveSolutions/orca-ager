@@ -156,6 +156,7 @@ def reverse_project(raw: dict[str, Any]) -> AgerGraph:
         remote_control=policy,
         name_prefix=_as_str(remote.get("name_prefix")),
         gate=gate,
+        knowledge_bind=_as_str(_as_dict(spec.get("knowledge_bind")).get("root")) or None,
     )
 
 
@@ -167,6 +168,7 @@ def graph_to_compact(graph: AgerGraph) -> dict[str, Any]:
         "description": graph.description,
         "entry": graph.entry,
         "objective": graph.objective,
+        "knowledge_bind": graph.knowledge_bind,
         "orca": {"remote_control": graph.remote_control, "name_prefix": graph.name_prefix},
         "loop": {
             "max_turns": graph.loop.max_turns,
