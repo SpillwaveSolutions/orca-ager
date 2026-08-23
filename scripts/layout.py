@@ -106,3 +106,100 @@ def to_yaml(value: Any, indent: int = 0) -> str:
                     rows.append(f"{pad}{k}: {dumped}")
         return "\n".join(rows)
     return _quote(str(value))
+
+
+def parse_yaml(src: str) -> Any:
+    """Parse the YAML subset this plugin emits. No PyYAML required."""
+    tokens: list[tuple[int, str]] = []
+    for line in src.replace("\r\n", "\n").split("\n"):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        tokens.append((indent, line[indent:]))
+    if not tokens:
+        return {}
+    value, _ = _parse_block(tokens, 0, tokens[0][0])
+    return value
+
+
+def _parse_scalar(raw: str) -> Any:
+    text = raw.strip()
+    if text in ("|", ">", ">-", "|-"):
+        return text
+    if text == "[]":
+        return []
+    if text == "{}":
+        return {}
+    if text in ("null", "~"):
+        return None
+    if text == "true":
+        return True
+    if text == "false":
+        return False
+    if re.match(r"^-?\d+$", text):
+        return int(text)
+    if re.match(r"^-?\d+\.\d+$", text):
+        return float(text)
+    if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+        return text[1:-1].replace('\\"', '"')
+    return text
+
+
+def _parse_block(tokens: list[tuple[int, str]], start: int, parent_indent: int) -> tuple[Any, int]:
+    if start >= len(tokens):
+        return None, start
+    indent, text = tokens[start]
+    if indent < parent_indent:
+        return None, start
+    if text.startswith("- "):
+        items: list[Any] = []
+        i = start
+        dash_indent = indent
+        while i < len(tokens) and tokens[i][0] == dash_indent and tokens[i][1].startswith("- "):
+            rest = tokens[i][1][2:]
+            if ":" in rest:
+                obj_tokens = [(dash_indent + 2, rest)]
+                j = i + 1
+                while j < len(tokens) and tokens[j][0] > dash_indent:
+                    obj_tokens.append(tokens[j])
+                    j += 1
+                parsed, _ = _parse_map(obj_tokens, 0, dash_indent + 2)
+                items.append(parsed)
+                i = j
+            else:
+                items.append(_parse_scalar(rest))
+                i += 1
+        return items, i
+    return _parse_map(tokens, start, indent)
+
+
+def _parse_map(tokens: list[tuple[int, str]], start: int, indent: int) -> tuple[dict[str, Any], int]:
+    obj: dict[str, Any] = {}
+    i = start
+    while i < len(tokens) and tokens[i][0] >= indent and not tokens[i][1].startswith("- "):
+        if tokens[i][0] != indent:
+            break
+        colon = tokens[i][1].find(":")
+        if colon < 0:
+            break
+        key = tokens[i][1][:colon].strip()
+        raw = tokens[i][1][colon + 1 :]
+        trimmed = raw.strip()
+        if trimmed == "" or trimmed in ("|", "|-"):
+            if trimmed.startswith("|"):
+                lines: list[str] = []
+                j = i + 1
+                while j < len(tokens) and tokens[j][0] > indent:
+                    lines.append(" " * (tokens[j][0] - indent - 2) + tokens[j][1])
+                    j += 1
+                obj[key] = "\n".join(lines)
+                i = j
+            else:
+                child, nxt = _parse_block(tokens, i + 1, indent + 1)
+                obj[key] = {} if child is None else child
+                i = nxt
+        else:
+            obj[key] = _parse_scalar(raw)
+            i += 1
+    return obj, i
+

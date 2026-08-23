@@ -233,6 +233,7 @@ Because many of the user’s projects already use an OKF second-brain repo:
 - [x] Every SYSTEM.md instructs the agent to load `orca-cli` and `orchestration` live guides.
 - [x] The stage DAG is emitted as orchestration primitives plus an Orca-Coordinator.
 - [x] Plugin vendors orca-cli and orchestration discovery stubs.
+- [x] `scripts/reverse.py` round-trips `orca-project.yaml` to a draft AGER graph (coordinator dropped, names → ids).
 
 ---
 
@@ -242,7 +243,7 @@ Because many of the user’s projects already use an OKF second-brain repo:
 2. Define the Orca target schema (YAML or JSON) based on current Orca CLI / project conventions (worktrees, agent CLI command, task metadata).
 3. Implement the named-role mapping and remote-control policy first — this is the user’s most immediate pain point.
 4. Encode the reference multi-model workflow as the primary sample.
-5. Add reverse engineering later (`ager-scan` style detection of Orca runs → draft AGER).
+5. Reverse engineering: `scripts/reverse.py --project orca-project.yaml --out ./reversed` drafts an AGER graph. Promote before treating as normative.
 
 Once this specification is accepted, the implementation can proceed in a separate Grok Build / Claude Code session as requested.
 

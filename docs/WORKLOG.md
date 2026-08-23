@@ -1,6 +1,6 @@
 # WORKLOG
 
-v0.2.0 — official Orca skills in the translator.
+v0.2.0 — official Orca skills + reverse capture.
 
 - Vendored `orca-cli` + `orchestration` discovery stubs from stablyai/orca
 - Every SYSTEM.md loads `orca skills get orca-cli` and `orca skills get orchestration --full`
@@ -8,7 +8,8 @@ v0.2.0 — official Orca skills in the translator.
 - Stage DAG via orchestration primitives + Orca-Coordinator
 - `scripts/run-feature.sh` resolves `orca-ide` on Linux, installs/loads skills, then runs the DAG
 - `/orca-skills` command
-- Studio Skills tab
+- Reverse capture: `scripts/reverse.py` + `/orca-reverse` drafts AGER from `orca-project.yaml`
+- Studio Skills + Reverse tabs
 
 v0.1.0 — initial AGER → Orca ADE translator.
 

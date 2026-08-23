@@ -2,7 +2,7 @@
 
 Translator. Compiles AGER → **Orca ADE**.
 
-- `/orca-init` `/orca-compile` `/orca-validate` `/orca-emit` `/ager-to-orca` `/orca-skills`
+- `/orca-init` `/orca-compile` `/orca-validate` `/orca-emit` `/ager-to-orca` `/orca-skills` `/orca-reverse`
 - `python3 scripts/emit.py --bundle path/to/ager --out ./generated`
 - `--remote-control rename|disable`  `--name-prefix <Fleet>`
 

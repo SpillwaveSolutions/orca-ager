@@ -5,6 +5,7 @@ Translator. Compiles a validated AGER/OKF AgentGraph into **Orca ADE**.
 ```bash
 python3 scripts/emit.py --bundle sample-ager --out ./generated
 python3 scripts/validate.py --bundle sample-ager
+python3 scripts/reverse.py --project sample-orca/orca-project.yaml --out ./reversed
 ```
 
 Do not author a new AGER graph (that is `okf-agent-graph`). Do not invent agents.

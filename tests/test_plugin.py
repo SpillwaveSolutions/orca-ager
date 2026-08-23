@@ -73,7 +73,7 @@ class PluginPackagingTests(unittest.TestCase):
             self.assertRegex(block, r"(?m)^description: .+$")
 
     def test_commands_exist(self) -> None:
-        for name in ("orca-init", "orca-compile", "orca-validate", "orca-emit", "ager-to-orca", "orca-skills"):
+        for name in ("orca-init", "orca-compile", "orca-validate", "orca-emit", "ager-to-orca", "orca-skills", "orca-reverse"):
             self.assertTrue((REPO / "commands" / f"{name}.md").is_file(), name)
 
     def test_peer_skill_stubs_shipped(self) -> None:
@@ -208,6 +208,48 @@ class EmitTests(unittest.TestCase):
 
         graph = load_sample()
         self.assertEqual(graph.loop.check_order, ["goal", "deadline", "price_budget", "max_turns", "no_progress"])
+
+
+class ReverseTests(unittest.TestCase):
+    def test_parse_sample_orca_project(self) -> None:
+        from layout import parse_yaml
+
+        raw = parse_yaml((REPO / "sample-orca/orca-project.yaml").read_text())
+        self.assertEqual(raw["kind"], "Project")
+        self.assertEqual(len(raw["spec"]["agents"]), 12)
+
+    def test_reverse_round_trip_sample(self) -> None:
+        from reverse import reverse_project, load_orca_project
+
+        graph = reverse_project(load_orca_project(REPO / "sample-orca/orca-project.yaml"))
+        self.assertEqual(len(graph.agents), 12)
+        self.assertEqual(graph.entry, "claude-plan-drafter")
+        self.assertEqual(graph.loop.max_turns, 12)
+        self.assertEqual(graph.remote_control, "rename")
+        ids = [a.id for a in graph.agents]
+        self.assertIn("claude-implementer", ids)
+        self.assertNotIn("orca-coordinator", ids)
+        implementer = next(a for a in graph.agents if a.id == "claude-implementer")
+        self.assertEqual(implementer.worktree, "wt-claude")
+        self.assertIn("claude-implementer", graph.stages[3].agents)
+        self.assertEqual(graph.gate.after, "final-spec-reviewer")
+        trees = sorted(a.worktree for a in graph.agents if a.worktree)
+        self.assertEqual(
+            trees,
+            ["wt-claude", "wt-codex", "wt-grok", "wt-judge-claude", "wt-judge-codex", "wt-judge-grok"],
+        )
+
+    def test_reverse_cli_writes_draft(self) -> None:
+        from reverse import load_orca_project, reverse_project, graph_to_compact
+        from layout import to_yaml, write
+
+        graph = reverse_project(load_orca_project(REPO / "sample-orca/orca-project.yaml"))
+        with tempfile.TemporaryDirectory() as td:
+            dest = write(Path(td), "reversed-ager.yaml", to_yaml(graph_to_compact(graph)))
+            text = dest.read_text()
+            self.assertIn("claude-plan-drafter", text)
+            self.assertIn("wt-claude", text)
+            self.assertNotIn("Orca-Coordinator", text)
 
 
 if __name__ == "__main__":

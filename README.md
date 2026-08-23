@@ -50,6 +50,7 @@ orca skills get orchestration --full
 /orca-skills
 /orca-compile
 /orca-validate
+/orca-reverse
 ```
 
 ```bash
@@ -57,6 +58,7 @@ python3 scripts/emit.py --bundle sample-ager --out ./generated
 python3 scripts/emit.py --bundle sample-ager --out ./generated --remote-control disable
 python3 scripts/emit.py --bundle sample-ager --out ./generated --name-prefix Fleet
 python3 scripts/validate.py --bundle sample-ager
+python3 scripts/reverse.py --project sample-orca/orca-project.yaml --out ./reversed
 python3 -m unittest tests/test_plugin.py
 ```
 
