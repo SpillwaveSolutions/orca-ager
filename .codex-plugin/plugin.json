@@ -1,0 +1,47 @@
+{
+  "name": "orca-ager",
+  "version": "0.1.0",
+  "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
+  "author": {
+    "name": "Rick Hightower",
+    "url": "https://github.com/RichardHightower"
+  },
+  "homepage": "https://github.com/SpillwaveSolutions/orca-ager",
+  "repository": "https://github.com/SpillwaveSolutions/orca-ager",
+  "license": "MIT",
+  "keywords": [
+    "ager",
+    "okf",
+    "orca",
+    "ade",
+    "stably",
+    "worktree",
+    "multi-agent",
+    "translator",
+    "claude-code",
+    "grok-build",
+    "codex",
+    "cursor",
+    "agent-plugins",
+    "worklog",
+    "wiki-ticket-sdd"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "orca-ager",
+    "shortDescription": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
+    "longDescription": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
+    "developerName": "Spillwave Solutions",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/SpillwaveSolutions/orca-ager",
+    "defaultPrompt": [
+      "Run /orca-compile on the AGER bundle in this workspace.",
+      "Compile the graph. Do not author a new AGER graph."
+    ],
+    "brandColor": "#07080a"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "Codex-Plan-Reviewer",
+  "input": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "draft-plan",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "title",
+      "summary",
+      "steps"
+    ],
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "steps": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "output": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "plan-critique",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "author",
+      "findings",
+      "score"
+    ],
+    "properties": {
+      "author": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "score": {
+        "type": "number"
+      }
+    }
+  },
+  "reads": [
+    "artifacts/draft-plan.md"
+  ],
+  "writes": [
+    "artifacts/critiques/critique-codex.md"
+  ]
+}

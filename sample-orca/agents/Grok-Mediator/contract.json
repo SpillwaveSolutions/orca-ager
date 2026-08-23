@@ -1,0 +1,58 @@
+{
+  "name": "Grok-Mediator",
+  "input": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "judgment",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "judge",
+      "subjects",
+      "scores",
+      "pass"
+    ],
+    "properties": {
+      "judge": {
+        "type": "string"
+      },
+      "subjects": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "scores": {
+        "type": "object"
+      },
+      "pass": {
+        "type": "boolean"
+      }
+    }
+  },
+  "output": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "mediator-decision",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "winner",
+      "rationale"
+    ],
+    "properties": {
+      "winner": {
+        "type": "string"
+      },
+      "rationale": {
+        "type": "string"
+      }
+    }
+  },
+  "reads": [
+    "artifacts/judgments/judge-claude.md",
+    "artifacts/judgments/judge-grok.md",
+    "artifacts/judgments/judge-codex.md"
+  ],
+  "writes": [
+    "artifacts/decision.md"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "Final-Spec-Reviewer",
+  "input": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "mediator-decision",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "winner",
+      "rationale"
+    ],
+    "properties": {
+      "winner": {
+        "type": "string"
+      },
+      "rationale": {
+        "type": "string"
+      }
+    }
+  },
+  "output": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "spec-review",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "matchesPlan",
+      "readyToMerge"
+    ],
+    "properties": {
+      "matchesPlan": {
+        "type": "boolean"
+      },
+      "readyToMerge": {
+        "type": "boolean"
+      }
+    }
+  },
+  "reads": [
+    "docs/planning/<feature>-<YYYY-MM-DD>.md",
+    "artifacts/decision.md"
+  ],
+  "writes": [
+    "artifacts/spec-review.md"
+  ]
+}

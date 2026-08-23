@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "judgment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "judge",
+    "subjects",
+    "scores",
+    "pass"
+  ],
+  "properties": {
+    "judge": {
+      "type": "string"
+    },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scores": {
+      "type": "object"
+    },
+    "pass": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "implementation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worktree",
+    "summary",
+    "files"
+  ],
+  "properties": {
+    "worktree": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

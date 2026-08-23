@@ -1,0 +1,263 @@
+# Compact AGER graph — orca-ager input
+ager_version: 0.3.0
+id: multi-model-feature
+title: Multi-model feature workflow
+description: Claude drafts, Grok and Codex review in parallel, three implementers ship in isolated worktrees, three judges score the others, Grok mediates, a spec reviewer gates the PR.
+entry: claude-plan-drafter
+objective: "start new feature: <description>"
+orca:
+  remote_control: rename
+  name_prefix: ""
+loop:
+  max_turns: 12
+  price_budget_usd: 25
+  deadline_ms: 14400000
+  check_order:
+    - goal
+    - deadline
+    - price_budget
+    - max_turns
+    - no_progress
+  on_goal: return
+  on_exhaust: return_best
+stages:
+  - id: plan-draft
+    title: Draft plan
+    parallel: false
+    isolated_worktrees: false
+    agents:
+    - claude-plan-drafter
+  - id: plan-review
+    title: Parallel plan review
+    parallel: true
+    isolated_worktrees: false
+    agents:
+    - grok-plan-reviewer
+    - codex-plan-reviewer
+  - id: plan-refine
+    title: Refine plan
+    parallel: false
+    isolated_worktrees: false
+    agents:
+    - claude-plan-refiner
+  - id: implement
+    title: Parallel implementers
+    parallel: true
+    isolated_worktrees: true
+    agents:
+    - claude-implementer
+    - grok-implementer
+    - codex-implementer
+  - id: judge
+    title: Cross-critique
+    parallel: true
+    isolated_worktrees: true
+    agents:
+    - claude-judge
+    - grok-judge
+    - codex-judge
+  - id: mediate
+    title: Mediate and steal
+    parallel: false
+    isolated_worktrees: false
+    agents:
+    - grok-mediator
+  - id: spec-review
+    title: Final spec review
+    parallel: false
+    isolated_worktrees: false
+    agents:
+    - final-spec-reviewer
+parallel_groups:
+  - id: plan-review
+    title: Plan reviewers
+    members:
+    - grok-plan-reviewer
+    - codex-plan-reviewer
+    isolated_worktrees: false
+  - id: implement
+    title: Implementers
+    members:
+    - claude-implementer
+    - grok-implementer
+    - codex-implementer
+    isolated_worktrees: true
+  - id: judge
+    title: Judges
+    members:
+    - claude-judge
+    - grok-judge
+    - codex-judge
+    isolated_worktrees: true
+gate:
+  id: merge-gate
+  title: PR and merge
+  after: final-spec-reviewer
+  question: Create the PR from the winning worktree and merge to main?
+  options:
+    - merge
+    - hold
+  action: pr_and_merge
+agents:
+  - id: claude-plan-drafter
+    type: OrchestratorAgent
+    host: claude
+    role: Plan-Drafter
+    title: Claude-Plan-Drafter
+    description: Drafts the feature plan from the trigger description.
+    stage: plan-draft
+    reads: []
+    writes:
+    - artifacts/draft-plan.md
+    judge_targets: []
+  - id: grok-plan-reviewer
+    type: JudgeAgent
+    host: grok
+    role: Plan-Reviewer
+    title: Grok-Plan-Reviewer
+    description: Critiques the draft plan in parallel with Codex.
+    stage: plan-review
+    reads:
+    - artifacts/draft-plan.md
+    writes:
+    - artifacts/critiques/critique-grok.md
+    judge_targets:
+    - claude-plan-drafter
+  - id: codex-plan-reviewer
+    type: JudgeAgent
+    host: codex
+    role: Plan-Reviewer
+    title: Codex-Plan-Reviewer
+    description: Critiques the draft plan in parallel with Grok.
+    stage: plan-review
+    reads:
+    - artifacts/draft-plan.md
+    writes:
+    - artifacts/critiques/critique-codex.md
+    judge_targets:
+    - claude-plan-drafter
+  - id: claude-plan-refiner
+    type: OrchestratorAgent
+    host: claude
+    role: Plan-Refiner
+    title: Claude-Plan-Refiner
+    description: Merges critiques into the durable planning document.
+    stage: plan-refine
+    reads:
+    - artifacts/draft-plan.md
+    - artifacts/critiques/critique-grok.md
+    - artifacts/critiques/critique-codex.md
+    writes:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    judge_targets: []
+  - id: claude-implementer
+    type: WorkerAgent
+    host: claude
+    role: Implementer
+    title: Claude-Implementer
+    description: Implements the plan in worktree wt-claude.
+    stage: implement
+    worktree: wt-claude
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    writes:
+    - artifacts/implementations/claude.md
+    judge_targets: []
+  - id: grok-implementer
+    type: WorkerAgent
+    host: grok
+    role: Implementer
+    title: Grok-Implementer
+    description: Implements the plan in worktree wt-grok.
+    stage: implement
+    worktree: wt-grok
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    writes:
+    - artifacts/implementations/grok.md
+    judge_targets: []
+  - id: codex-implementer
+    type: WorkerAgent
+    host: codex
+    role: Implementer
+    title: Codex-Implementer
+    description: Implements the plan in worktree wt-codex.
+    stage: implement
+    worktree: wt-codex
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    writes:
+    - artifacts/implementations/codex.md
+    judge_targets: []
+  - id: claude-judge
+    type: JudgeAgent
+    host: claude
+    role: Judge
+    title: Claude-Judge
+    description: Scores Grok and Codex implementations; never its own.
+    stage: judge
+    worktree: wt-judge-claude
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    writes:
+    - artifacts/judgments/judge-claude.md
+    judge_targets:
+    - grok-implementer
+    - codex-implementer
+  - id: grok-judge
+    type: JudgeAgent
+    host: grok
+    role: Judge
+    title: Grok-Judge
+    description: Scores Claude and Codex implementations; never its own.
+    stage: judge
+    worktree: wt-judge-grok
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    writes:
+    - artifacts/judgments/judge-grok.md
+    judge_targets:
+    - claude-implementer
+    - codex-implementer
+  - id: codex-judge
+    type: JudgeAgent
+    host: codex
+    role: Judge
+    title: Codex-Judge
+    description: Scores Claude and Grok implementations; never its own.
+    stage: judge
+    worktree: wt-judge-codex
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    writes:
+    - artifacts/judgments/judge-codex.md
+    judge_targets:
+    - claude-implementer
+    - grok-implementer
+  - id: grok-mediator
+    type: SynthesizerAgent
+    host: grok
+    role: Mediator
+    title: Grok-Mediator
+    description: Selects the winner and instructs it to steal the best ideas.
+    stage: mediate
+    reads:
+    - artifacts/judgments/judge-claude.md
+    - artifacts/judgments/judge-grok.md
+    - artifacts/judgments/judge-codex.md
+    writes:
+    - artifacts/decision.md
+    judge_targets: []
+  - id: final-spec-reviewer
+    type: GuardrailAgent
+    host: final
+    role: Spec-Reviewer
+    title: Final-Spec-Reviewer
+    description: Checks the winning tree against the original plan.
+    stage: spec-review
+    reads:
+    - docs/planning/<feature>-<YYYY-MM-DD>.md
+    - artifacts/decision.md
+    writes:
+    - artifacts/spec-review.md
+    judge_targets: []

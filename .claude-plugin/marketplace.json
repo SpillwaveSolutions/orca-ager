@@ -1,0 +1,41 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "orca-ager-marketplace",
+  "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
+  "owner": {
+    "name": "Rick Hightower",
+    "url": "https://github.com/RichardHightower"
+  },
+  "plugins": [
+    {
+      "name": "orca-ager",
+      "source": "./",
+      "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Rick Hightower"
+      },
+      "homepage": "https://github.com/SpillwaveSolutions/orca-ager",
+      "repository": "https://github.com/SpillwaveSolutions/orca-ager",
+      "license": "MIT",
+      "keywords": [
+        "ager",
+        "okf",
+        "orca",
+        "ade",
+        "stably",
+        "worktree",
+        "multi-agent",
+        "translator",
+        "claude-code",
+        "grok-build",
+        "codex",
+        "cursor",
+        "agent-plugins",
+        "worklog",
+        "wiki-ticket-sdd"
+      ],
+      "category": "productivity"
+    }
+  ]
+}

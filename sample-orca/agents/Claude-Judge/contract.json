@@ -1,0 +1,63 @@
+{
+  "name": "Claude-Judge",
+  "input": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "implementation",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "worktree",
+      "summary",
+      "files"
+    ],
+    "properties": {
+      "worktree": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "output": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "judgment",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "judge",
+      "subjects",
+      "scores",
+      "pass"
+    ],
+    "properties": {
+      "judge": {
+        "type": "string"
+      },
+      "subjects": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "scores": {
+        "type": "object"
+      },
+      "pass": {
+        "type": "boolean"
+      }
+    }
+  },
+  "reads": [
+    "docs/planning/<feature>-<YYYY-MM-DD>.md"
+  ],
+  "writes": [
+    "artifacts/judgments/judge-claude.md"
+  ]
+}

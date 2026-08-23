@@ -1,0 +1,65 @@
+{
+  "name": "Claude-Plan-Refiner",
+  "input": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "plan-critique",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "author",
+      "findings",
+      "score"
+    ],
+    "properties": {
+      "author": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "score": {
+        "type": "number"
+      }
+    }
+  },
+  "output": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "final-plan",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "feature",
+      "date",
+      "path",
+      "acceptance"
+    ],
+    "properties": {
+      "feature": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "acceptance": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "reads": [
+    "artifacts/draft-plan.md",
+    "artifacts/critiques/critique-grok.md",
+    "artifacts/critiques/critique-codex.md"
+  ],
+  "writes": [
+    "docs/planning/<feature>-<YYYY-MM-DD>.md"
+  ]
+}

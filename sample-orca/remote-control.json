@@ -1,0 +1,91 @@
+{
+  "policy": "rename",
+  "map": {
+    "claude-plan-drafter": "Claude-Plan-Drafter",
+    "grok-plan-reviewer": "Grok-Plan-Reviewer",
+    "codex-plan-reviewer": "Codex-Plan-Reviewer",
+    "claude-plan-refiner": "Claude-Plan-Refiner",
+    "claude-implementer": "Claude-Implementer",
+    "grok-implementer": "Grok-Implementer",
+    "codex-implementer": "Codex-Implementer",
+    "claude-judge": "Claude-Judge",
+    "grok-judge": "Grok-Judge",
+    "codex-judge": "Codex-Judge",
+    "grok-mediator": "Grok-Mediator",
+    "final-spec-reviewer": "Final-Spec-Reviewer"
+  },
+  "titles": [
+    {
+      "name": "Claude-Plan-Drafter",
+      "host": "claude",
+      "worktree": null,
+      "stage": "plan-draft"
+    },
+    {
+      "name": "Grok-Plan-Reviewer",
+      "host": "grok",
+      "worktree": null,
+      "stage": "plan-review"
+    },
+    {
+      "name": "Codex-Plan-Reviewer",
+      "host": "codex",
+      "worktree": null,
+      "stage": "plan-review"
+    },
+    {
+      "name": "Claude-Plan-Refiner",
+      "host": "claude",
+      "worktree": null,
+      "stage": "plan-refine"
+    },
+    {
+      "name": "Claude-Implementer",
+      "host": "claude",
+      "worktree": "wt-claude",
+      "stage": "implement"
+    },
+    {
+      "name": "Grok-Implementer",
+      "host": "grok",
+      "worktree": "wt-grok",
+      "stage": "implement"
+    },
+    {
+      "name": "Codex-Implementer",
+      "host": "codex",
+      "worktree": "wt-codex",
+      "stage": "implement"
+    },
+    {
+      "name": "Claude-Judge",
+      "host": "claude",
+      "worktree": "wt-judge-claude",
+      "stage": "judge"
+    },
+    {
+      "name": "Grok-Judge",
+      "host": "grok",
+      "worktree": "wt-judge-grok",
+      "stage": "judge"
+    },
+    {
+      "name": "Codex-Judge",
+      "host": "codex",
+      "worktree": "wt-judge-codex",
+      "stage": "judge"
+    },
+    {
+      "name": "Grok-Mediator",
+      "host": "grok",
+      "worktree": null,
+      "stage": "mediate"
+    },
+    {
+      "name": "Final-Spec-Reviewer",
+      "host": "final",
+      "worktree": null,
+      "stage": "spec-review"
+    }
+  ]
+}

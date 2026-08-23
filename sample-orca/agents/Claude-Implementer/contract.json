@@ -1,0 +1,63 @@
+{
+  "name": "Claude-Implementer",
+  "input": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "final-plan",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "feature",
+      "date",
+      "path",
+      "acceptance"
+    ],
+    "properties": {
+      "feature": {
+        "type": "string"
+      },
+      "date": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "acceptance": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "output": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "implementation",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "worktree",
+      "summary",
+      "files"
+    ],
+    "properties": {
+      "worktree": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "reads": [
+    "docs/planning/<feature>-<YYYY-MM-DD>.md"
+  ],
+  "writes": [
+    "artifacts/implementations/claude.md"
+  ]
+}

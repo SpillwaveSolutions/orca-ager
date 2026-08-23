@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Plugin packaging lockstep + emit smoke + Orca-specific rules."""
+
+from __future__ import annotations
+
+import json
+import re
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+VERSION = "0.1.0"
+NAME = "orca-ager"
+sys.path.insert(0, str(REPO / "scripts"))
+
+NAMED_ROLE_RE = re.compile(r"^[A-Z][A-Za-z0-9]*(-[A-Z][A-Za-z0-9]*)+$")
+
+
+class PluginPackagingTests(unittest.TestCase):
+    def test_manifest_versions_stay_in_lockstep(self) -> None:
+        claude = json.loads((REPO / ".claude-plugin/plugin.json").read_text())
+        codex = json.loads((REPO / ".codex-plugin/plugin.json").read_text())
+        cursor = json.loads((REPO / ".cursor-plugin/plugin.json").read_text())
+        root = json.loads((REPO / "plugin.json").read_text())
+        claude_market = json.loads((REPO / ".claude-plugin/marketplace.json").read_text())
+        grok = json.loads((REPO / ".grok-plugin/marketplace.json").read_text())
+        root_market = json.loads((REPO / "marketplace.json").read_text())
+        found = {
+            claude["version"],
+            codex["version"],
+            cursor["version"],
+            root["version"],
+            claude_market["plugins"][0]["version"],
+            grok["version"],
+            grok["plugins"][0]["version"],
+            root_market["plugins"][0]["version"],
+        }
+        self.assertEqual(found, {VERSION})
+
+    def test_names_match(self) -> None:
+        for path in (
+            "plugin.json",
+            ".claude-plugin/plugin.json",
+            ".codex-plugin/plugin.json",
+            ".cursor-plugin/plugin.json",
+        ):
+            data = json.loads((REPO / path).read_text())
+            self.assertEqual(data["name"], NAME, path)
+
+    def test_agent_plugins_schema(self) -> None:
+        root = json.loads((REPO / "plugin.json").read_text())
+        self.assertTrue(root["$schema"].startswith("https://agent-plugins.org/"))
+
+    def test_codex_skills_resolve(self) -> None:
+        manifest = json.loads((REPO / ".codex-plugin/plugin.json").read_text())
+        self.assertTrue((REPO / manifest["skills"]).is_dir())
+
+    def test_cursor_pointers_resolve(self) -> None:
+        manifest = json.loads((REPO / ".cursor-plugin/plugin.json").read_text())
+        self.assertTrue((REPO / manifest["skills"]).is_dir())
+        self.assertTrue((REPO / manifest["rules"]).is_dir())
+        self.assertTrue((REPO / manifest["commands"]).is_dir())
+
+    def test_skill_frontmatter(self) -> None:
+        for skill in sorted((REPO / "skills").glob("*/SKILL.md")):
+            text = skill.read_text()
+            match = re.match(r"^---\n(.*?)\n---", text, re.S)
+            self.assertIsNotNone(match, skill)
+            block = match.group(1)
+            self.assertRegex(block, r"(?m)^name: [a-z0-9-]+$")
+            self.assertRegex(block, r"(?m)^description: .+$")
+
+    def test_commands_exist(self) -> None:
+        for name in ("orca-init", "orca-compile", "orca-validate", "orca-emit", "ager-to-orca"):
+            self.assertTrue((REPO / "commands" / f"{name}.md").is_file(), name)
+
+
+class EmitTests(unittest.TestCase):
+    def test_sample_emits_named_agents_and_worktrees(self) -> None:
+        from emit import emit, named_role
+        from ir import load_sample
+        from validate import validate_graph, validate_project
+        from emit import build_project
+
+        self.assertEqual(named_role("claude", "Plan-Drafter"), "Claude-Plan-Drafter")
+        self.assertEqual(named_role("grok", "Mediator", "Acme"), "Acme-Grok-Mediator")
+        self.assertRegex("Final-Spec-Reviewer", NAMED_ROLE_RE)
+
+        graph = load_sample()
+        graph_check = validate_graph(graph)
+        self.assertTrue(graph_check.ok, [e.message for e in graph_check.errors])
+
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td)
+            written = emit(graph, out)
+            self.assertGreaterEqual(len(written), 20)
+            self.assertTrue((out / "orca-project.yaml").is_file())
+            self.assertTrue((out / "scripts/run-feature.sh").is_file())
+            self.assertTrue((out / "remote-control.json").is_file())
+            self.assertTrue((out / "COMPILE.md").is_file())
+            self.assertTrue((out / "agents/Claude-Plan-Drafter/SYSTEM.md").is_file())
+            self.assertTrue((out / "agents/Grok-Mediator/SYSTEM.md").is_file())
+            self.assertTrue((out / "agents/Final-Spec-Reviewer/SYSTEM.md").is_file())
+
+            project = build_project(graph)
+            project_check = validate_project(project)
+            self.assertTrue(project_check.ok, [e.message for e in project_check.errors])
+            names = [a["name"] for a in project["spec"]["agents"]]
+            self.assertEqual(len(names), len(set(names)))
+            self.assertEqual(len(names), 12)
+            for name in names:
+                self.assertRegex(name, NAMED_ROLE_RE)
+            implementers = [a for a in project["spec"]["agents"] if a["role"] == "Implementer"]
+            trees = sorted(a["worktree"] for a in implementers)
+            self.assertEqual(trees, ["wt-claude", "wt-codex", "wt-grok"])
+            judges = [a for a in project["spec"]["agents"] if a["role"] == "Judge"]
+            self.assertEqual(sorted(a["worktree"] for a in judges), ["wt-judge-claude", "wt-judge-codex", "wt-judge-grok"])
+
+            remote = json.loads((out / "remote-control.json").read_text())
+            self.assertEqual(remote["policy"], "rename")
+            self.assertIn("claude-plan-drafter", remote["map"])
+
+            script = (out / "scripts/run-feature.sh").read_text()
+            self.assertIn("--name Claude-Implementer", script)
+            self.assertIn("worktree create --name wt-claude", script)
+            self.assertIn("gate-create", script)
+
+    def test_fails_on_worktree_overlap(self) -> None:
+        from emit import emit
+        from ir import load_sample
+
+        graph = load_sample()
+        grok = next(a for a in graph.agents if a.id == "grok-implementer")
+        grok.worktree = "wt-claude"
+        with tempfile.TemporaryDirectory() as td:
+            with self.assertRaises(SystemExit) as ctx:
+                emit(graph, Path(td))
+            self.assertIn("Worktree", str(ctx.exception))
+
+    def test_fails_on_missing_schemas(self) -> None:
+        from ir import SchemaRef, load_sample
+        from validate import validate_graph
+
+        graph = load_sample()
+        graph.agents[0].input_schema = SchemaRef("", {})
+        check = validate_graph(graph)
+        self.assertFalse(check.ok)
+        self.assertTrue(any(e.code == "schema.input" for e in check.errors))
+
+    def test_fails_on_name_collision(self) -> None:
+        from emit import build_project
+        from ir import load_sample
+        from validate import validate_project
+
+        graph = load_sample()
+        graph.agents[1].title = "Claude-Plan-Drafter"
+        graph.agents[1].host = "claude"
+        graph.agents[1].role = "Plan-Drafter"
+        project = build_project(graph)
+        check = validate_project(project)
+        self.assertFalse(check.ok)
+        self.assertTrue(any(e.code == "name.collision" for e in check.errors))
+
+    def test_remote_control_disable_and_prefix(self) -> None:
+        from emit import emit
+        from ir import load_sample
+
+        graph = load_sample()
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td)
+            emit(graph, out, remote_control="disable", name_prefix="Fleet")
+            remote = json.loads((out / "remote-control.json").read_text())
+            self.assertEqual(remote["policy"], "disable")
+            self.assertTrue((out / "agents/Fleet-Claude-Plan-Drafter/SYSTEM.md").is_file())
+
+    def test_loop_policy_order(self) -> None:
+        from ir import load_sample
+
+        graph = load_sample()
+        self.assertEqual(graph.loop.check_order, ["goal", "deadline", "price_budget", "max_turns", "no_progress"])
+
+
+if __name__ == "__main__":
+    unittest.main()

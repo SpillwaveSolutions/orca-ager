@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "spec-review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "matchesPlan",
+    "readyToMerge"
+  ],
+  "properties": {
+    "matchesPlan": {
+      "type": "boolean"
+    },
+    "readyToMerge": {
+      "type": "boolean"
+    }
+  }
+}
