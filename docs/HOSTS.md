@@ -15,3 +15,14 @@ Command on Codex: `$orca-compile`
 
 Depends on `okf-agent-graph` for author/validate. This plugin only compiles.
 Orca ADE is the runtime: https://github.com/stablyai/orca · https://www.onorca.dev/
+
+Peer skills from stablyai/orca (required at runtime):
+
+```bash
+npx skills add https://github.com/stablyai/orca --skill orca-cli --global
+npx skills add https://github.com/stablyai/orca --skill orchestration --global
+orca skills get orca-cli
+orca skills get orchestration --full
+```
+
+Worktrees and handoffs use **orca-cli**. The plan → review → implement → judge → mediate DAG uses **orchestration**. Never raw `git worktree`.

@@ -2,12 +2,14 @@
 
 Translator. Compiles AGER → **Orca ADE**.
 
-- `/orca-init` `/orca-compile` `/orca-validate` `/orca-emit` `/ager-to-orca`
+- `/orca-init` `/orca-compile` `/orca-validate` `/orca-emit` `/ager-to-orca` `/orca-skills`
 - `python3 scripts/emit.py --bundle path/to/ager --out ./generated`
 - `--remote-control rename|disable`  `--name-prefix <Fleet>`
 
 Every generated agent is named `<Host>-<Role>` (Claude-Plan-Drafter, Grok-Mediator).
-Parallel isolated stages get distinct git worktrees. Fail on overlap or missing schemas.
+Parallel isolated stages get distinct git worktrees via **orca-cli**, never raw `git worktree`. Fail on overlap or missing schemas.
+
+Peer skills (required): `orca-cli` and `orchestration` from stablyai/orca. Load live guides (`orca skills get orca-cli`, `orca skills get orchestration --full`) before mutating ADE state. The coordinator loop is orchestration; worktrees/handoffs are orca-cli.
 
 Hosts: Agent Plugins 1.0, Claude Code, Grok Build, Codex, Cursor.
 

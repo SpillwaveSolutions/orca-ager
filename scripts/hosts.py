@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 AUTHOR = {"name": "Rick Hightower", "url": "https://github.com/RichardHightower"}
 NAME = "orca-ager"
 DESCRIPTION = (
     "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration — "
-    "named worktree agents, parallel fan-out, remote-control rename or disable."
+    "named worktree agents, parallel fan-out, orca-cli + orchestration skills, remote-control rename or disable."
 )
 HOMEPAGE = "https://github.com/SpillwaveSolutions/orca-ager"
 KEYWORDS = [
@@ -24,6 +24,8 @@ KEYWORDS = [
     "worktree",
     "multi-agent",
     "translator",
+    "orca-cli",
+    "orchestration",
     "claude-code",
     "grok-build",
     "codex",
@@ -272,6 +274,17 @@ Command on Codex: `$orca-compile`
 
 Depends on `okf-agent-graph` for author/validate. This plugin only compiles.
 Orca ADE is the runtime: https://github.com/stablyai/orca · https://www.onorca.dev/
+
+Peer skills from stablyai/orca (required at runtime):
+
+```bash
+npx skills add https://github.com/stablyai/orca --skill orca-cli --global
+npx skills add https://github.com/stablyai/orca --skill orchestration --global
+orca skills get orca-cli
+orca skills get orchestration --full
+```
+
+Worktrees and handoffs use **orca-cli**. The plan → review → implement → judge → mediate DAG uses **orchestration**. Never raw `git worktree`.
 """,
         )
     )
@@ -310,11 +323,13 @@ You are compiling a validated AGER/OKF AgentGraph into Orca ADE. You are not aut
 2. Do not invent agents, tools, or edges that are not in the graph.
 3. Honor LoopPolicy check order: goal, deadline, price, max_turns, no_progress.
 4. Every generated Orca agent must be named `<Host>-<Role>` (e.g. Claude-Plan-Drafter).
-5. Parallel isolated stages get distinct git worktrees. Fail on overlap.
+5. Parallel isolated stages get distinct git worktrees via **orca-cli**, never raw `git worktree`. Fail on overlap.
 6. Remote-control policy is `rename` (default) or `disable`. Never leave anonymous panes.
-7. If `okf-agent-graph` / `ager-validate` is available, validate first. If it fails, stop.
-8. Never claim production-ready without tests. Hosts do not meter USD; document the budget and stop.
-9. Same skills serve Claude Code, Grok Build, Codex, Cursor, and Agent Plugins 1.0.
+7. Every SYSTEM.md must instruct the agent to `orca skills get orca-cli` and `orca skills get orchestration --full` before mutating ADE state.
+8. The stage DAG (plan → review → implement → judge → mediate → gate) is an **orchestration** coordinator loop.
+9. If `okf-agent-graph` / `ager-validate` is available, validate first. If it fails, stop.
+10. Never claim production-ready without tests. Hosts do not meter USD; document the budget and stop.
+11. Same skills serve Claude Code, Grok Build, Codex, Cursor, and Agent Plugins 1.0.
 """,
         )
     )

@@ -4,8 +4,12 @@ Generated output of `python3 scripts/emit.py --bundle sample-ager --out sample-o
 
 Do not edit by hand. Re-emit after graph changes.
 
-Entry: **Claude-Plan-Drafter**. Remote-control: **rename**. Isolated implementer worktrees: `wt-claude`, `wt-grok`, `wt-codex`.
+Entry: **Claude-Plan-Drafter**. Coordinator: **Orca-Coordinator**. Remote-control: **rename**. Isolated implementer worktrees: `wt-claude`, `wt-grok`, `wt-codex` via orca-cli.
+
+Peer skills: `orca-cli` + `orchestration`. See `ORCA_SKILLS.md`.
 
 ```bash
+npx skills add https://github.com/stablyai/orca --skill orca-cli --global
+npx skills add https://github.com/stablyai/orca --skill orchestration --global
 bash scripts/run-feature.sh "start new feature: <description>"
 ```

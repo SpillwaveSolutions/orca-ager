@@ -14,27 +14,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from ir import HOST_CLI, HOST_LABEL, AgerGraph, Agent, load_bundle
 from layout import dump_json, to_yaml, write
+from skills import (
+    PEER_SKILLS,
+    RESOLVE_ORCA_BASH,
+    SKILL_PREAMBLE,
+    coordinator_prompt,
+    load_stub,
+    orca_skills_doc,
+    skills_for,
+)
 from validate import NAMED_ROLE_RE, validate_graph, validate_project
 
-PLUGIN_VERSION = "0.1.0"
+PLUGIN_VERSION = "0.2.0"
 
 CONCEPT_MAP = [
     ("AgentGraph / AgentGraphModule", "Orca Project / Run", "Top-level orchestration unit. Emits orca-project.yaml."),
-    ("OrchestratorAgent", "Lead session (named, no isolated worktree)", "Plans, spawns, re-plans. Example: Claude-Plan-Drafter."),
-    ("WorkerAgent", "Named agent in isolated git worktree", "orca worktree create --name wt-<host> --agent <cli>"),
+    ("OrchestratorAgent", "Lead session (named, no isolated worktree)", "Plans, spawns, re-plans. Example: Claude-Plan-Drafter. Primary skill: orchestration."),
+    ("WorkerAgent", "Named agent in isolated git worktree (orca-cli)", "orca-cli worktree create --name wt-<host> --agent <cli>. Prefer over raw git worktree."),
     ("JudgeAgent", "Dedicated judge worktree or post-run reviewer", "Writes critique / judgment markdown. Reviews the other implementations."),
-    ("SynthesizerAgent", "Mediator / idea-steal step", "Picks a winner and instructs it to steal the best ideas."),
+    ("SynthesizerAgent", "Mediator / idea-steal step", "Picks a winner and instructs it to steal the best ideas. Orchestration DAG step."),
     ("RouterAgent", "Conditional ControlEdge → stage routing", "Task DAG edges in orca orchestration."),
     ("GuardrailAgent", "Pre/post schema validation + ToolRule", "Final-Spec-Reviewer checks the winner against the original plan."),
-    ("HumanGate", "orca orchestration gate-create + merge gate", "Optional mobile notification and PR merge approval."),
-    ("FanOut / ParallelGroup", "Parallel worktrees fan-out", "One worktree per parallel agent. Names stay unique."),
+    ("HumanGate", "orchestration gate-create + merge gate", "Optional mobile notification and PR merge approval. Load orchestration --full first."),
+    ("FanOut / ParallelGroup", "Parallel named worktrees (orca-cli) + parallel workers (orchestration)", "One worktree per parallel agent. Names stay unique."),
     ("FanIn", "Comparison / judgment stage", "Judges read sibling worktrees and write score files."),
     ("LoopControl / LoopPolicy", "Task budget, max_turns, deadline, no_progress", "Hosts do not meter USD; the run script tracks an estimate and stops."),
     ("ScratchPad", "Shared plan.md + critique files + artifacts/", "docs/planning/<feature>-<date>.md is the durable plan."),
-    ("Tool + ToolRule", "Agent CLI tools + Orca CLI", "worktree create, snapshot, terminal send, orchestration send."),
-    ("Run / Trigger", "orca orchestration run-create", "Triggered by prompt or ticket: start new feature: <description>."),
+    ("Tool + ToolRule", "orca-cli skill", "worktree create, terminal send/wait, full handoff, snapshot. Prefer over raw git worktree."),
+    ("Run / Trigger", "orchestration skill: run-create + task-create + worker-start", "Triggered by prompt or ticket: start new feature: <description>. Coordinator drives the DAG."),
     ("Rubric / Judgment", "Judge critique files + final score", "artifacts/judgments/judge-<host>.md"),
     ("Named roles", "<Host>-<Role> session titles", "Remote-control list stays intelligible. Policy: rename | disable."),
+    ("Peer skills", "orca-cli + orchestration (stablyai/orca)", "Discovery stubs in skills/. Live guide: orca skills get orca-cli / orchestration --full."),
+    ("Coordinator loop", "Orca-Coordinator", "Loads orchestration --full, then run-create → named workers → worker_done waits → gate-create."),
 ]
 
 
@@ -116,6 +127,7 @@ def build_project(
                 "instructions": agent.instructions,
             }
         )
+        agents[-1]["skills"] = skills_for(agents[-1])
 
     stages = []
     for stage in graph.stages:
@@ -176,6 +188,12 @@ def build_project(
             "stages": stages,
             "agents": agents,
             "gates": gates,
+            "skills": PEER_SKILLS,
+            "coordinator": {
+                "name": "Orca-Coordinator",
+                "prompt": "agents/Orca-Coordinator/SYSTEM.md",
+                "skill": "orchestration",
+            },
         },
     }
 
@@ -221,6 +239,9 @@ Remote control: **{project['spec']['remote_control']['policy']}**
 LoopPolicy: {' → '.join(loop['check_order'])}
 max_turns={loop['max_turns']}  price=${loop['price_budget_usd']}  deadline_ms={loop['deadline_ms']}
 
+Peer skills: **orca-cli** (`orca skills get orca-cli`) and **orchestration** (`orca skills get orchestration --full`).
+Coordinator: **Orca-Coordinator** drives the DAG. Isolated implementers/judges use orca-cli named worktrees, not raw git.
+
 ## Named agents
 
 | AGER id | Type | Orca name | Worktree |
@@ -236,10 +257,13 @@ max_turns={loop['max_turns']}  price=${loop['price_budget_usd']}  deadline_ms={l
 ## Run
 
 ```bash
+# install peer skills once
+npx skills add https://github.com/stablyai/orca --skill orca-cli --global
+npx skills add https://github.com/stablyai/orca --skill orchestration --global
 bash scripts/run-feature.sh "start new feature: <description>"
 ```
 
-Do not invent extra agents. Honor LoopPolicy. Isolated parallel stages must not share a worktree.
+Do not invent extra agents. Honor LoopPolicy. Isolated parallel stages must not share a worktree. Load live Orca skill guides before mutating ADE state.
 """
 
 
@@ -247,50 +271,71 @@ def run_script(project: dict[str, Any]) -> str:
     objective = str(project["spec"]["objective"]).replace('"', '\\"')
     lines = [
         "#!/usr/bin/env bash",
-        "# Generated by orca-ager — do not freehand. Re-emit after graph changes.",
+        "# Generated by orca-ager. Bootstrap + orchestration DAG. Re-emit after graph changes.",
+        "# orca-cli        → named worktrees, terminals, handoffs (never raw git worktree)",
+        "# orchestration   → run-create, task-create, worker-start --name, check --wait, gate-create",
         "set -euo pipefail",
         f'OBJECTIVE="${{1:-{objective}}}"',
-        'command -v orca >/dev/null || { echo "orca CLI not on PATH"; exit 1; }',
+        "",
+        RESOLVE_ORCA_BASH.strip(),
+        "",
+        "ORCA_BIN=$(resolve_orca_bin)",
+        'command -v "$ORCA_BIN" >/dev/null || { echo "Orca CLI not on PATH (resolved: $ORCA_BIN). Install Orca ADE or set ORCA_CLI_COMMAND."; exit 1; }',
         'command -v jq >/dev/null || { echo "jq is required"; exit 1; }',
         "",
-        'RUN_ID=$(orca orchestration run-create --objective "$OBJECTIVE" --json | jq -r .id)',
+        "# Confirm the ADE is up (from orca-cli / orchestration skill stubs).",
+        '"$ORCA_BIN" status --json >/dev/null 2>&1 || "$ORCA_BIN" open --json >/dev/null',
+        "",
+        "# Peer skills. Stubs are discovery-only; load the live guide next.",
+        '"$ORCA_BIN" skills install --skill orca-cli --skill orchestration >/dev/null 2>&1 || true',
+        '"$ORCA_BIN" skills get orca-cli >/dev/null',
+        '"$ORCA_BIN" skills get orchestration --full >/dev/null',
+        "",
+        'RUN_ID=$("$ORCA_BIN" orchestration run-create --objective "$OBJECTIVE" --json | jq -r .id)',
         'echo "run $RUN_ID"',
         "",
     ]
     by_name = {a["name"]: a for a in project["spec"]["agents"]}
     for stage in project["spec"]["stages"]:
-        lines.append(f"# --- {stage['title']} ({stage['id']}) ---")
+        skill = "orca-cli worktrees + orchestration workers" if stage.get("isolated_worktrees") else "orchestration"
+        lines.append(f"# --- {stage['title']} ({stage['id']}) via {skill} ---")
         for name in stage["agents"]:
             agent = by_name.get(name)
             if not agent:
                 continue
             var = "TASK_" + agent["ager_id"].replace("-", "_").upper()
             lines.append(
-                f'{var}=$(orca orchestration task-create --spec "$OBJECTIVE" --task-title "{agent["name"]}" --json | jq -r .id)'
+                f'{var}=$("$ORCA_BIN" orchestration task-create --spec "$OBJECTIVE" --task-title "{agent["name"]}" --json | jq -r .id)'
             )
             if agent.get("worktree"):
                 lines.append(
-                    f"orca worktree create --name {agent['worktree']} --agent {agent['agent']} --json >/dev/null"
+                    f'"$ORCA_BIN" worktree create --name {agent["worktree"]} --agent {agent["agent"]} --json >/dev/null'
                 )
                 lines.append(
-                    f'orca orchestration worker-start --task "${var}" --worktree new-top-level --name {agent["name"]} --agent {agent["agent"]} --json'
+                    f'"$ORCA_BIN" orchestration worker-start --task "${var}" --worktree {agent["worktree"]} --name {agent["name"]} --agent {agent["agent"]} --json'
                 )
             else:
                 lines.append(
-                    f'orca orchestration worker-start --task "${var}" --worktree current --name {agent["name"]} --agent {agent["agent"]} --json'
+                    f'"$ORCA_BIN" orchestration worker-start --task "${var}" --worktree current --name {agent["name"]} --agent {agent["agent"]} --json'
                 )
-            lines.append(f'orca terminal send --text "$(cat {agent["prompt"]})" --enter --json >/dev/null || true')
+            lines.append(
+                f'"$ORCA_BIN" terminal send --text "$(cat {agent["prompt"]})" --enter --json >/dev/null || true'
+            )
         if stage.get("parallel"):
-            lines.append("orca orchestration check --wait --types worker_done,escalation,question --timeout-ms 900000 --json")
+            lines.append(
+                '"$ORCA_BIN" orchestration check --wait --types worker_done,escalation,question --timeout-ms 900000 --json'
+            )
         else:
-            lines.append("orca orchestration check --wait --types worker_done --timeout-ms 900000 --json")
+            lines.append(
+                '"$ORCA_BIN" orchestration check --wait --types worker_done --timeout-ms 900000 --json'
+            )
         lines.append("")
     for gate in project["spec"].get("gates") or []:
         question = str(gate["question"]).replace('"', '\\"')
         options = json.dumps(gate["options"])
-        lines.append(f"# HumanGate: {gate['id']}")
+        lines.append(f"# HumanGate: {gate['id']} (orchestration)")
         lines.append(
-            f"orca orchestration gate-create --task \"$RUN_ID\" --question \"{question}\" --options '{options}' --json"
+            f'"$ORCA_BIN" orchestration gate-create --task "$RUN_ID" --question "{question}" --options \'{options}\' --json'
         )
     lines.append('echo "orca-ager run complete: $RUN_ID"')
     return "\n".join(lines) + "\n"
@@ -314,11 +359,14 @@ Plan files live under `docs/planning/`. Critiques and judgments live under `arti
 
 
 def system_prompt(agent: dict[str, Any], graph: AgerGraph, project: dict[str, Any]) -> str:
-    tree = (
-        f"Isolated git worktree: `{agent['worktree']}`."
-        if agent.get("worktree")
-        else "Lead / shared session. Do not create a worktree."
-    )
+    if agent.get("worktree"):
+        tree = (
+            f"Isolated Orca worktree: `{agent['worktree']}`. "
+            f"Create it with orca-cli (`worktree create --name {agent['worktree']}`). "
+            "Never raw `git worktree`."
+        )
+    else:
+        tree = "Lead / shared session. Do not create a worktree."
     judges = ""
     if agent.get("judge_targets"):
         names = ", ".join(f"**{n}**" for n in agent["judge_targets"])
@@ -330,20 +378,32 @@ def system_prompt(agent: dict[str, Any], graph: AgerGraph, project: dict[str, An
         else f"Remote-control title: **{agent['name']}**. Do not rename yourself."
     )
     order = " → ".join(graph.loop.check_order)
+    binding = agent.get("skills") or skills_for(agent)
+    primary = binding["primary"]
+    required = ", ".join(binding["required"])
+    why = binding["why"]
     return f"""---
 name: {agent['name']}
 host: {agent['host']}
 role: {agent['role']}
 ager_id: {agent['ager_id']}
+skills_primary: {primary}
 ---
 
 # {agent['name']}
 
 {agent['instructions']}
 
+{SKILL_PREAMBLE}
+
+Primary skill: **{primary}**. Required: {required}.
+{why}
+
 {tree}
 {judges}
 {remote}
+
+When your contracted files are written, report with `orchestration send --type worker_done`. Escalate with `orchestration ask` rather than inventing a side channel.
 
 InputSchema: `{agent['input_schema']}`
 OutputSchema: `{agent['output_schema']}`
@@ -374,7 +434,11 @@ def emit(
         "remote-control.json": remote_control_json(project),
         "COMPILE.md": compile_report(graph, project),
         "handoffs.md": handoffs(project),
+        "ORCA_SKILLS.md": orca_skills_doc(),
         "scripts/run-feature.sh": run_script(project),
+        "agents/Orca-Coordinator/SYSTEM.md": coordinator_prompt(project),
+        "skills/orca-cli/SKILL.md": load_stub("orca-cli"),
+        "skills/orchestration/SKILL.md": load_stub("orchestration"),
         "docs/planning/.gitkeep": "",
         "artifacts/critiques/.gitkeep": "",
         "artifacts/judgments/.gitkeep": "",

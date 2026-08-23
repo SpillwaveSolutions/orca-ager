@@ -68,12 +68,14 @@ def to_yaml(value: Any, indent: int = 0) -> str:
                 first = f"{first_k}: {to_yaml(first_v, indent + 1)}"
                 rest = []
                 for k, v in entries[1:]:
-                    dumped = to_yaml(v, indent + 1)
                     if isinstance(v, dict) and v:
+                        dumped = to_yaml(v, indent + 2)
                         rest.append(f"{pad}  {k}:\n{dumped}")
                     elif isinstance(v, list) and v:
+                        dumped = to_yaml(v, indent + 2)
                         rest.append(f"{pad}  {k}:\n{dumped}")
                     else:
+                        dumped = to_yaml(v, indent + 1)
                         rest.append(f"{pad}  {k}: {dumped}")
                 block = f"{pad}- {first}"
                 if rest:

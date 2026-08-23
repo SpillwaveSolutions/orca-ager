@@ -1,7 +1,7 @@
 # Orca AGER Translator Specification
 
 **Plugin name:** `orca-ager`  
-**Spec version:** `0.1.0-draft`  
+**Spec version:** `0.2.0`  
 **Date:** 2026-08-23  
 **Status:** Draft for implementation  
 **Authors:** Spillwave Solutions / Grok team (Rick Hightower request)  
@@ -60,9 +60,11 @@ Aligned with AGER v0.3.0:
 | FanIn                     | Comparison / judgment stage                         | |
 | LoopControl / LoopPolicy  | Task budget, max_turns, deadline, no_progress       | |
 | ScratchPad                | Shared plan.md + critique files + artifacts dir      | |
-| Tool + ToolRule           | Agent CLI tools + Orca CLI (worktree create, snapshot, etc.) | |
-| Run / Trigger             | Orca Run / Task triggered by prompt or ticket       | |
+| Tool + ToolRule           | **orca-cli** skill (worktree, terminal, handoff) | Prefer over raw `git worktree` |
+| Run / Trigger             | **orchestration** skill: Run / Task / worker-start | Named `--name <Host>-<Role>` |
 | Rubric / Judgment         | Judge critique files + final score                  | |
+| Peer skills               | orca-cli + orchestration (stablyai/orca)            | Load live guides before commands |
+| Coordinator loop          | Orca-Coordinator                                    | Drives the DAG; does not implement |
 
 ### Named Role Conventions (required)
 
@@ -218,16 +220,19 @@ Because many of the user’s projects already use an OKF second-brain repo:
 
 ---
 
-## 8. Acceptance Criteria for v0.1
+## 8. Acceptance Criteria for v0.2
 
-- [ ] `scripts/emit.py` can take a valid AGER 0.3.0 bundle and produce a runnable Orca project skeleton.
-- [ ] All generated agents receive stable, human-readable names of the form `<Host>-<Role>`.
-- [ ] Parallel stages create distinct git worktrees.
-- [ ] Plan, critique, and judgment files follow the user’s `docs/planning/` and artifact conventions.
-- [ ] Optional remote-control rename or disable is emitted.
-- [ ] A sample AGER graph for the multi-model feature workflow is included and successfully compiles.
-- [ ] Host packaging works for Claude Code, Codex, and Grok Build.
-- [ ] Validation fails loudly on missing schemas, name collisions, or overlapping worktree paths.
+- [x] `scripts/emit.py` can take a valid AGER 0.3.0 bundle and produce a runnable Orca project skeleton.
+- [x] All generated agents receive stable, human-readable names of the form `<Host>-<Role>`.
+- [x] Parallel stages create distinct git worktrees via **orca-cli** (never raw `git worktree`).
+- [x] Plan, critique, and judgment files follow the user’s `docs/planning/` and artifact conventions.
+- [x] Optional remote-control rename or disable is emitted.
+- [x] A sample AGER graph for the multi-model feature workflow is included and successfully compiles.
+- [x] Host packaging works for Claude Code, Codex, and Grok Build.
+- [x] Validation fails loudly on missing schemas, name collisions, or overlapping worktree paths.
+- [x] Every SYSTEM.md instructs the agent to load `orca-cli` and `orchestration` live guides.
+- [x] The stage DAG is emitted as orchestration primitives plus an Orca-Coordinator.
+- [x] Plugin vendors orca-cli and orchestration discovery stubs.
 
 ---
 

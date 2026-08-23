@@ -1,7 +1,7 @@
 {
   "name": "orca-ager",
-  "version": "0.1.0",
-  "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
+  "version": "0.2.0",
+  "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, orca-cli + orchestration skills, remote-control rename or disable.",
   "author": {
     "name": "Rick Hightower"
   },
@@ -17,6 +17,8 @@
     "worktree",
     "multi-agent",
     "translator",
+    "orca-cli",
+    "orchestration",
     "claude-code",
     "grok-build",
     "codex",

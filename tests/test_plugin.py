@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 NAME = "orca-ager"
 sys.path.insert(0, str(REPO / "scripts"))
 
@@ -73,8 +73,16 @@ class PluginPackagingTests(unittest.TestCase):
             self.assertRegex(block, r"(?m)^description: .+$")
 
     def test_commands_exist(self) -> None:
-        for name in ("orca-init", "orca-compile", "orca-validate", "orca-emit", "ager-to-orca"):
+        for name in ("orca-init", "orca-compile", "orca-validate", "orca-emit", "ager-to-orca", "orca-skills"):
             self.assertTrue((REPO / "commands" / f"{name}.md").is_file(), name)
+
+    def test_peer_skill_stubs_shipped(self) -> None:
+        for name in ("orca-cli", "orchestration"):
+            skill = REPO / "skills" / name / "SKILL.md"
+            self.assertTrue(skill.is_file(), name)
+            text = skill.read_text()
+            self.assertIn("discovery stub", text)
+            self.assertIn("skills get", text)
 
 
 class EmitTests(unittest.TestCase):
@@ -126,6 +134,26 @@ class EmitTests(unittest.TestCase):
             self.assertIn("--name Claude-Implementer", script)
             self.assertIn("worktree create --name wt-claude", script)
             self.assertIn("gate-create", script)
+            self.assertIn("orca-ide", script)
+            self.assertIn("skills get orca-cli", script)
+            self.assertIn("skills get orchestration --full", script)
+            self.assertNotIn("git worktree add", script)
+            self.assertNotIn("git worktree create", script)
+            self.assertTrue((out / "agents/Orca-Coordinator/SYSTEM.md").is_file())
+            self.assertTrue((out / "skills/orca-cli/SKILL.md").is_file())
+            self.assertTrue((out / "skills/orchestration/SKILL.md").is_file())
+            self.assertTrue((out / "ORCA_SKILLS.md").is_file())
+            prompt = (out / "agents/Claude-Implementer/SYSTEM.md").read_text()
+            self.assertIn("orca skills get orca-cli", prompt)
+            self.assertIn("orca skills get orchestration --full", prompt)
+            self.assertIn("Never raw `git worktree`", prompt)
+            coord = (out / "agents/Orca-Coordinator/SYSTEM.md").read_text()
+            self.assertIn("orchestration", coord)
+            self.assertIn("Claude-Implementer", coord)
+            yaml = (out / "orca-project.yaml").read_text()
+            self.assertIn("orca-cli", yaml)
+            self.assertIn("Orca-Coordinator", yaml)
+            self.assertRegex(yaml, r"(?m)^\s+skills:\n\s+primary: orca-cli")
 
     def test_fails_on_worktree_overlap(self) -> None:
         from emit import emit

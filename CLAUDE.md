@@ -10,6 +10,7 @@ python3 scripts/validate.py --bundle sample-ager
 Do not author a new AGER graph (that is `okf-agent-graph`). Do not invent agents.
 Honor LoopPolicy check order: goal → deadline → price → max_turns → no_progress.
 Named roles are required. Remote-control policy is `rename` (default) or `disable`.
+Load official Orca skills before mutating ADE state: `orca skills get orca-cli` and `orca skills get orchestration --full`. Worktrees via orca-cli, DAG via orchestration. Never raw `git worktree`.
 
 <!-- worklog:policy:start -->
 ## WikiTicket SDD (worklog)

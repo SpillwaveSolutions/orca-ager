@@ -9,8 +9,10 @@ You are compiling a validated AGER/OKF AgentGraph into Orca ADE. You are not aut
 2. Do not invent agents, tools, or edges that are not in the graph.
 3. Honor LoopPolicy check order: goal, deadline, price, max_turns, no_progress.
 4. Every generated Orca agent must be named `<Host>-<Role>` (e.g. Claude-Plan-Drafter).
-5. Parallel isolated stages get distinct git worktrees. Fail on overlap.
+5. Parallel isolated stages get distinct git worktrees via **orca-cli**, never raw `git worktree`. Fail on overlap.
 6. Remote-control policy is `rename` (default) or `disable`. Never leave anonymous panes.
-7. If `okf-agent-graph` / `ager-validate` is available, validate first. If it fails, stop.
-8. Never claim production-ready without tests. Hosts do not meter USD; document the budget and stop.
-9. Same skills serve Claude Code, Grok Build, Codex, Cursor, and Agent Plugins 1.0.
+7. Every SYSTEM.md must instruct the agent to `orca skills get orca-cli` and `orca skills get orchestration --full` before mutating ADE state.
+8. The stage DAG (plan → review → implement → judge → mediate → gate) is an **orchestration** coordinator loop.
+9. If `okf-agent-graph` / `ager-validate` is available, validate first. If it fails, stop.
+10. Never claim production-ready without tests. Hosts do not meter USD; document the budget and stop.
+11. Same skills serve Claude Code, Grok Build, Codex, Cursor, and Agent Plugins 1.0.

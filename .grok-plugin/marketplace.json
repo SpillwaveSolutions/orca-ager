@@ -1,13 +1,13 @@
 {
   "name": "orca-ager-marketplace",
-  "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable. Grok Build loads the Claude layout with zero config.",
-  "version": "0.1.0",
+  "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, orca-cli + orchestration skills, remote-control rename or disable. Grok Build loads the Claude layout with zero config.",
+  "version": "0.2.0",
   "plugins": [
     {
       "name": "orca-ager",
       "source": ".",
-      "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, remote-control rename or disable.",
-      "version": "0.1.0",
+      "description": "Translate a validated AGER/OKF AgentGraph into Orca ADE orchestration \u2014 named worktree agents, parallel fan-out, orca-cli + orchestration skills, remote-control rename or disable.",
+      "version": "0.2.0",
       "compatibility": {
         "claude_plugin": true,
         "zero_config": true
